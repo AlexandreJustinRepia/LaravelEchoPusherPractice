@@ -63,3 +63,19 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
+Route::middleware('auth')->post('/private-send', function (\Illuminate\Http\Request $request) {
+    event(new \App\Events\PrivateChatMessage(
+        $request->message,
+        auth()->id(),
+        $request->receiverId
+    ));
+
+    return response()->json(['status' => 'sent']);
+});
+
+Route::middleware('auth')->get('/auth-chat', function () {
+    return Inertia::render('AuthChat', [
+        'users' => \App\Models\User::select('id','name')->get(),
+        'auth' => ['user' => auth()->user()]
+    ]);
+});
