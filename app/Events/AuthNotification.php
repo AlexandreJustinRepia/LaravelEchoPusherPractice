@@ -9,28 +9,29 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-class AuthNotification
+class AuthNotification implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable, SerializesModels;
 
-    /**
-     * Create a new event instance.
-     */
-    public function __construct()
+    public $message;
+    public $userId;
+
+    public function __construct($message, $userId)
     {
-        //
+        $this->message = $message;
+        $this->userId = $userId;
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
-    public function broadcastOn(): array
+    public function broadcastOn()
     {
-        return [
-            new PrivateChannel('channel-name'),
-        ];
+        // PRIVATE CHANNEL: only that user receives it
+        return new PrivateChannel('user.' . $this->userId);
+    }
+
+    public function broadcastAs()
+    {
+        return 'auth.notification';
     }
 }
