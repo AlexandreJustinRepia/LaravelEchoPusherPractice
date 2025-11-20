@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\RealtimeController;
 use App\Events\SampleEvent;
 use Illuminate\Http\Request;
+use App\Events\ChatMessageSent;
+use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -37,6 +39,14 @@ Route::post('/send-notif', function (Request $request) {
     return response()->json(['status' => 'success', 'data' => $data]);
 });
 
+//No Auth Chat
+Route::get('/chat-room', [ChatController::class, 'noAuthChatRoom']);
+
+Route::post('/send-message', function (Request $request) {
+    event(new ChatMessageSent($request->message, $request->sender));
+    return response()->json(['status' => 'ok']);
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -44,3 +54,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
